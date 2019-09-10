@@ -11,11 +11,11 @@ const passport = require('passport')
 // $router  GET api/users/test
 // @desc    返回的请求json数据
 // @access  public
-router.get("/test",(req, res) =>{
-    res.json({
-        msg: "login Works"
-    })
-})
+// router.get("/test",(req, res) =>{
+//     res.json({
+//         msg: "login Works"
+//     })
+// })
 
 // $router  POST api/users/regist
 // @desc    返回的请求json数据
@@ -40,7 +40,8 @@ router.post("/regist", (req, res) => {
                     name: req.body.name,
                     email: req.body.email,
                     avatar,
-                    password: req.body.password
+                    password: req.body.password,
+                    identity: req.body.identity
                 })
 
                 // 对密码加密
@@ -81,7 +82,7 @@ router.post("/login", (req, res) => {
                         // 匹配成功需要做的事情
                         // jwt.sign("规则","加密名字","过期时间[秒]","箭头函数") 返回一个token
 
-                        const rule = {id: user.id, name: user.name}     //规则
+                        const rule = {id: user.id, name: user.name, identity: user.identity}     //规则
                         jwt.sign(rule,keys.secretOrKey,{expiresIn: 3600}, (err, token) => {
                             if(err) throw err
                             res.json({
@@ -91,7 +92,7 @@ router.post("/login", (req, res) => {
                         })
                         // res.json({msg: 'success'})
                     } else {
-                        return res.status(404).json({password: "密码错误"})
+                        return res.status(404).json("密码错误")
                     }
                 })
         })
@@ -99,9 +100,15 @@ router.post("/login", (req, res) => {
 
 // $router  GET api/users/current
 // @desc    返回 current user
-// @access  public
+// @access  private
 router.get("/current",passport.authenticate("jwt",{session: false}), (req, res) => {
-    res.json(req.user)
+    res.json({
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        password: req.user.password,
+        identity: req.user.identity
+    })
 })
 
 module.exports = router
